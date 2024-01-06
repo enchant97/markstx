@@ -1,0 +1,12 @@
+[package]
+name = "enhanced-markdown"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0.195", features = ["derive"] }
+serde_yaml = "0.9.30"
+pulldown-cmark = "0.9.3"
+tera = "1.19.1"
+clap = { version = "4.4.13", features = ["derive"] }
+rust-embed = "8.2.0"
