@@ -1,0 +1,7 @@
+{% macro columns_container(columns=2) %}
+<div style="column-count: {{ columns }}">
+
+{{ caller() }}
+
+</div>
+{% endmacro %}
