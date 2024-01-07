@@ -23,6 +23,7 @@ fn create_template_env() -> Environment<'static> {
         }
         Ok(None)
     });
+    env.add_function("execute_command", functions::execute_command);
     env.add_function("csv_to_table", functions::csv_to_table);
     env.add_function("lorem_ipsum", functions::lorem_ipsum);
     env

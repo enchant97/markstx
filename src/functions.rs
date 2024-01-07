@@ -1,5 +1,29 @@
 use minijinja::{value::Kwargs, Error};
-use std::fs;
+use std::{
+    fs,
+    process::{Command, Stdio},
+};
+
+pub fn execute_command(command: String, options: Kwargs) -> Result<String, Error> {
+    match options.get::<Option<Vec<String>>>("args")? {
+        Some(args) => Ok(std::str::from_utf8(
+            &Command::new(&command)
+                .args(&args)
+                .stdout(Stdio::piped())
+                .spawn()
+                .unwrap()
+                .wait_with_output()
+                .unwrap()
+                .stdout,
+        )
+        .unwrap()
+        .to_owned()),
+        None => Err(Error::new(
+            minijinja::ErrorKind::MissingArgument,
+            "missing 'args'",
+        )),
+    }
+}
 
 pub fn lorem_ipsum(options: Kwargs) -> Result<String, Error> {
     match options.get("words")? {
