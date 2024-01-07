@@ -14,7 +14,11 @@ struct TemplateAssets;
 fn create_template_env() -> Environment<'static> {
     let mut env = Environment::new();
     env.set_loader(|name| {
-        if let Some(asset) = TemplateAssets::get(&format!("{name}.html.tmpl")) {
+        let actual_name = match name.ends_with(".tmpl") {
+            true => name.to_owned(),
+            false => format!("{name}.html.tmpl"),
+        };
+        if let Some(asset) = TemplateAssets::get(&actual_name) {
             return Ok(std::str::from_utf8(&asset.data).ok().map(|v| v.to_owned()));
         }
         Ok(None)
