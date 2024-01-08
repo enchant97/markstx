@@ -36,7 +36,7 @@ fn main() {
 
     let source_content = std::fs::read_to_string(args.file.to_str().unwrap()).unwrap();
 
-    let enriched_md = template_env.render_str(&source_content, {}).unwrap();
+    let enriched_md = template_env.render_str(&source_content, ()).unwrap();
 
     let md_parser = pulldown_cmark::Parser::new_ext(&enriched_md, Options::all());
     let mut output = String::new();

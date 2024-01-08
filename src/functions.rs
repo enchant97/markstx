@@ -7,7 +7,7 @@ use std::{
 pub fn execute_command(command: String, options: Kwargs) -> Result<String, Error> {
     match options.get::<Option<Vec<String>>>("args")? {
         Some(args) => Ok(std::str::from_utf8(
-            &Command::new(&command)
+            &Command::new(command)
                 .args(&args)
                 .stdout(Stdio::piped())
                 .spawn()
@@ -58,7 +58,7 @@ pub fn csv_to_table(options: Kwargs) -> Result<String, Error> {
                 output.push_str("</thead>");
             }
 
-            for row in lines.into_iter() {
+            for row in lines {
                 let columns: Vec<&str> = row.split(',').collect();
                 output.push_str("<tr>");
                 output.push_str(
@@ -73,7 +73,7 @@ pub fn csv_to_table(options: Kwargs) -> Result<String, Error> {
 
             output.push_str("</table>\n");
 
-            Ok(output.into())
+            Ok(output)
         }
         None => Err(Error::new(
             minijinja::ErrorKind::MissingArgument,
