@@ -1,0 +1,25 @@
+{% macro csv_to_table(path="") %}
+{% if path %}
+{% set csv = convert_csv(path=path) %}
+{% else %}
+{% set csv = convert_csv(content=caller()) %}
+{% endif %}
+<table>
+    <thead>
+        <tr>
+            {%- for column in csv.headers -%}
+            <th>{{ column }}</th>
+            {%- endfor -%}
+        </tr>
+    </thead>
+    <tbody>
+        {%- for row in csv.records -%}
+        <tr>
+            {%- for column in row -%}
+            <td>{{ column }}</td>
+            {%- endfor -%}
+        </tr>
+        {%- endfor -%}
+    </tbody>
+</table>
+{% endmacro %}

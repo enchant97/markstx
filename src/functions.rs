@@ -1,8 +1,6 @@
-use minijinja::{value::Kwargs, Error};
-use std::{
-    fs,
-    process::{Command, Stdio},
-};
+use minijinja::{value::Kwargs, Error, Value};
+use serde::{Deserialize, Serialize};
+use std::process::{Command, Stdio};
 
 pub fn execute_command(command: String, options: Kwargs) -> Result<String, Error> {
     match options.get::<Option<Vec<String>>>("args")? {
@@ -35,49 +33,48 @@ pub fn lorem_ipsum(options: Kwargs) -> Result<String, Error> {
     }
 }
 
-pub fn csv_to_table(options: Kwargs) -> Result<String, Error> {
-    match options.get("path")? {
-        Some(path) => {
-            let content = fs::read_to_string::<&str>(path)
-                .map_err(|e| Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()))?;
-            let mut lines = content.lines();
-            let mut output = String::new();
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ParsedCSV {
+    pub headers: Vec<String>,
+    pub records: Vec<Vec<String>>,
+}
 
-            output.push_str("\n<table>");
+fn pass_csv<R>(reader: &mut csv::Reader<R>) -> Result<ParsedCSV, Error>
+where
+    R: std::io::Read,
+{
+    let headers = reader
+        .headers()
+        .map_err(|e| Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()))?
+        .into_iter()
+        .map(|v| v.to_owned())
+        .collect::<Vec<String>>();
+    let mut records = Vec::new();
+    for result in reader.records() {
+        let columns = result
+            .map_err(|e| Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()))?
+            .into_iter()
+            .map(|v| v.to_owned())
+            .collect::<Vec<String>>();
+        records.push(columns);
+    }
+    Ok(ParsedCSV { headers, records })
+}
 
-            if let Some(header) = &lines.next() {
-                let columns: Vec<&str> = header.split(',').collect();
-                output.push_str("<thead>");
-                output.push_str(
-                    &columns
-                        .into_iter()
-                        .map(|v| format!("<th>{}</th>", v.trim()))
-                        .collect::<Vec<_>>()
-                        .join(""),
-                );
-                output.push_str("</thead>");
-            }
-
-            for row in lines {
-                let columns: Vec<&str> = row.split(',').collect();
-                output.push_str("<tr>");
-                output.push_str(
-                    &columns
-                        .into_iter()
-                        .map(|v| format!("<td>{}</td>", v.trim()))
-                        .collect::<Vec<_>>()
-                        .join(""),
-                );
-                output.push_str("</tr>");
-            }
-
-            output.push_str("</table>\n");
-
-            Ok(output)
-        }
-        None => Err(Error::new(
+pub fn convert_csv(options: Kwargs) -> Result<Value, Error> {
+    if let Some(path) = options.get::<Option<String>>("path")? {
+        let mut reader = csv::Reader::from_path(&path)
+            .map_err(|e| Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()))?;
+        let parsed = pass_csv(&mut reader)?;
+        Ok(Value::from_serializable(&parsed))
+    } else if let Some(content) = options.get::<Option<String>>("content")? {
+        let mut reader = csv::Reader::from_reader(content.as_bytes());
+        let parsed = pass_csv(&mut reader)?;
+        Ok(Value::from_serializable(&parsed))
+    } else {
+        Err(Error::new(
             minijinja::ErrorKind::MissingArgument,
-            "missing 'path'",
-        )),
+            "missing 'path' or 'content'",
+        ))
     }
 }
