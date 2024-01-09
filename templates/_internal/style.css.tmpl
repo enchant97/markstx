@@ -13,3 +13,27 @@
 {%- endwith -%}
 
 }
+
+img {
+    width: 100%;
+    height: auto;
+}
+
+h2 {
+  page-break-before: always;
+  break-before: page;
+}
+
+@page blank {
+  @bottom-center {
+    content: none;
+  }
+
+  @top-left {
+    content: none;
+  }
+
+  @top-right {
+    content: none;
+  }
+}
