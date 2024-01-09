@@ -46,10 +46,6 @@ fn main() {
         None => FrontMatter::default(),
     };
 
-    let base_tmpl = template_env
-        .get_template("_internal/base")
-        .expect("internal template not found");
-
     let enriched_md = template_env
         .render_str(
             &content_raw,
@@ -60,15 +56,8 @@ fn main() {
         .unwrap();
 
     let md_parser = pulldown_cmark::Parser::new_ext(&enriched_md, Options::all());
-    let mut content_body = String::new();
-    pulldown_cmark::html::push_html(&mut content_body, md_parser);
+    let mut content = String::new();
+    pulldown_cmark::html::push_html(&mut content, md_parser);
 
-    let final_output = base_tmpl
-        .render(context! {
-            frontmatter,
-            content_body,
-        })
-        .unwrap();
-
-    println!("{}", final_output);
+    println!("{}", content);
 }

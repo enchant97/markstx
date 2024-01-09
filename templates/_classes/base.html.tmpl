@@ -6,8 +6,9 @@
         <style>
         {% include "_internal/style.css.tmpl" %}
         </style>
+        {%- block head -%}{%- endblock -%}
     </head>
     <body>
-{{ content_body -}}
+        {%- block body -%}{%- endblock -%}
     </body>
 </html>
