@@ -1,7 +1,79 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize, Debug)]
+pub enum PageOrientation {
+    #[serde(rename = "portrait")]
+    Portrait,
+    #[serde(rename = "landscape")]
+    Landscape,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
+pub enum PageSize {
+    Absolute {
+        name: String,
+        orientation: PageOrientation,
+    },
+    Values {
+        width: String,
+        height: String,
+    },
+}
+
+impl Default for PageSize {
+    fn default() -> Self {
+        Self::Absolute {
+            name: String::from("A4"),
+            orientation: PageOrientation::Portrait,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PageMargin {
+    pub top: String,
+    pub right: String,
+    pub bottom: String,
+    pub left: String,
+}
+
+impl Default for PageMargin {
+    fn default() -> Self {
+        const DEFAULT_MARGIN: &str = "0.75in";
+        Self {
+            top: String::from(DEFAULT_MARGIN),
+            right: String::from(DEFAULT_MARGIN),
+            bottom: String::from(DEFAULT_MARGIN),
+            left: String::from(DEFAULT_MARGIN),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Default, Debug)]
-pub struct FrontMatter {}
+pub struct PageConfig {
+    #[serde(default)]
+    pub size: PageSize,
+    #[serde(default)]
+    pub margin: PageMargin,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FrontMatter {
+    #[serde(default)]
+    pub title: String,
+    #[serde(default)]
+    pub page: PageConfig,
+}
+
+impl Default for FrontMatter {
+    fn default() -> Self {
+        Self {
+            title: String::from("Untitled Document"),
+            page: Default::default(),
+        }
+    }
+}
 
 impl FrontMatter {
     pub fn from_yaml_str(content: &str) -> Result<Self, serde_yaml::Error> {

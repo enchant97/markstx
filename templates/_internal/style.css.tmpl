@@ -1,0 +1,15 @@
+@page {
+
+{% with s = frontmatter.page.size %}
+{%- if "name" in s -%}
+    size: {{ s.name }} {{ s.orientation }};
+{%- else -%}
+    size: {{ s.width }} {{ s.height }};
+{%- endif -%}
+{%- endwith -%}
+
+{% with m = frontmatter.page.margin %}
+    margin: {{ m.top }} {{ m.right }} {{ m.bottom }} {{ m.left }};
+{%- endwith -%}
+
+}
