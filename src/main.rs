@@ -2,6 +2,8 @@ mod args;
 mod frontmatter;
 mod functions;
 
+use std::sync::{Arc, RwLock};
+
 use args::Args;
 use clap::Parser;
 use minijinja::{context, Environment};
@@ -14,8 +16,9 @@ use crate::frontmatter::{split_by_frontmatter, FrontMatter};
 #[folder = "templates/"]
 struct TemplateAssets;
 
-fn create_template_env() -> Environment<'static> {
-    let mut env = Environment::new();
+fn setup_template_env(shared_env: Arc<RwLock<Environment<'static>>>) {
+    let env = shared_env.clone();
+    let mut env = env.write().unwrap();
     env.set_loader(|name| {
         let actual_name = match name.ends_with(".tmpl") {
             true => name.to_owned(),
@@ -26,16 +29,18 @@ fn create_template_env() -> Environment<'static> {
         }
         Ok(None)
     });
+    env.add_function("include", functions::make_include(shared_env.clone()));
     env.add_function("execute_command", functions::execute_command);
     env.add_function("convert_csv", functions::convert_csv);
     env.add_function("lorem_ipsum", functions::lorem_ipsum);
-    env
 }
 
 fn main() {
     let args = Args::parse();
 
-    let template_env = create_template_env();
+    let template_env = Arc::new(RwLock::new(Environment::new()));
+
+    setup_template_env(template_env.clone());
 
     let source_content = std::fs::read_to_string(args.file.to_str().unwrap()).unwrap();
 
@@ -46,11 +51,17 @@ fn main() {
         None => FrontMatter::default(),
     };
 
+    let abs_path = args.file.canonicalize().unwrap();
+    let current_dir = abs_path.parent().unwrap().to_str().unwrap();
+
     let enriched_md = template_env
+        .read()
+        .unwrap()
         .render_str(
             &content_raw,
             context! {
                 frontmatter,
+                current_dir,
             },
         )
         .unwrap();

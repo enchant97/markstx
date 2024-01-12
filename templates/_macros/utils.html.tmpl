@@ -5,3 +5,8 @@
 {% macro page_break() %}
 <div style="break-before:page; page-break-before:always;"></div>
 {% endmacro %}
+
+
+{% macro include_rel(filename) %}
+{{ include(current_dir, filename) }}
+{% endmacro %}

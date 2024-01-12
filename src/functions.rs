@@ -1,6 +1,33 @@
-use minijinja::{value::Kwargs, Error, Value};
+use minijinja::{context, functions::Function, value::Kwargs, Environment, Error, Value};
 use serde::{Deserialize, Serialize};
-use std::process::{Command, Stdio};
+use std::{
+    path::PathBuf,
+    process::{Command, Stdio},
+    sync::{Arc, RwLock},
+};
+
+type FnResult<Rt> = Result<Rt, Error>;
+
+pub fn make_include(
+    env: Arc<RwLock<Environment<'static>>>,
+) -> impl Function<FnResult<String>, (String, String)> {
+    move |dir: String, filename: String| -> FnResult<String> {
+        let full_path = PathBuf::from(dir).join(filename);
+        let current_dir = &full_path.parent().unwrap().to_str().unwrap();
+        let content = std::fs::read_to_string(&full_path).unwrap();
+        env.read()
+            .unwrap()
+            .render_str(
+                &content,
+                context! {
+                    current_dir,
+                },
+            )
+            .map_err(|e| {
+                minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string())
+            })
+    }
+}
 
 pub fn execute_command(command: String, options: Kwargs) -> Result<String, Error> {
     match options.get::<Option<Vec<String>>>("args")? {
