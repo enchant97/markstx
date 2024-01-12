@@ -1,4 +1,4 @@
-use minijinja::{context, functions::Function, value::Kwargs, Environment, Error, Value};
+use minijinja::{functions::Function, value::Kwargs, Error, Value};
 use serde::{Deserialize, Serialize};
 use std::{
     path::PathBuf,
@@ -6,26 +6,17 @@ use std::{
     sync::{Arc, RwLock},
 };
 
+use crate::processor::Processor;
+
 type FnResult<Rt> = Result<Rt, Error>;
 
 pub fn make_include(
-    env: Arc<RwLock<Environment<'static>>>,
+    processor: Arc<RwLock<Processor>>,
 ) -> impl Function<FnResult<String>, (String, String)> {
     move |dir: String, filename: String| -> FnResult<String> {
-        let full_path = PathBuf::from(dir).join(filename);
-        let current_dir = &full_path.parent().unwrap().to_str().unwrap();
-        let content = std::fs::read_to_string(&full_path).unwrap();
-        env.read()
-            .unwrap()
-            .render_str(
-                &content,
-                context! {
-                    current_dir,
-                },
-            )
-            .map_err(|e| {
-                minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string())
-            })
+        let path = PathBuf::from(dir).join(filename);
+        let content = processor.read().unwrap().render_content(path);
+        Ok(content)
     }
 }
 
