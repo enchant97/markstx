@@ -1,8 +1,8 @@
 {% macro csv_to_table(path="") %}
 {% if path %}
-{% set csv = convert_csv(path=path) %}
+{% set csv = _convert_csv(path=path) %}
 {% else %}
-{% set csv = convert_csv(content=caller()) %}
+{% set csv = _convert_csv(content=caller()) %}
 {% endif %}
 <table>
     <thead>

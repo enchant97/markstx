@@ -41,10 +41,10 @@ impl Processor {
             Ok(None)
         });
 
-        env.add_function("include", functions::make_include(processor));
-        env.add_function("execute_command", functions::execute_command);
-        env.add_function("convert_csv", functions::convert_csv);
-        env.add_function("lorem_ipsum", functions::lorem_ipsum);
+        env.add_function("_include", functions::make_include(processor));
+        env.add_function("_execute_command", functions::execute_command);
+        env.add_function("_convert_csv", functions::convert_csv);
+        env.add_function("_lorem_ipsum", functions::lorem_ipsum);
     }
     pub fn create_context<P: AsRef<Path>>(&self, filepath: P) -> Value {
         let abs_path = filepath.as_ref().canonicalize().unwrap();

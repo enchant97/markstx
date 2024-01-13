@@ -7,5 +7,13 @@
 {% endmacro %}
 
 {% macro include_rel(filename) %}
-{{ include(current_dir, filename) }}
+{{ _include(current_dir, filename) }}
+{% endmacro %}
+
+{% macro execute_command(command, args=[]) -%}
+{{ _execute_command(command, args=args) }}
+{%- endmacro %}
+
+{% macro lorem_ipsum(words=30) %}
+{{ _lorem_ipsum(words=words) }}
 {% endmacro %}
