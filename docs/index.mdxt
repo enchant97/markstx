@@ -1,0 +1,25 @@
+---
+doc:
+    title: "The MarkstX Manual"
+---
+{% extends "_classes/basic" %}
+{% block content %}
+{% import "_macros/layouts" as layouts %}
+{% import "_macros/utils" as utils %}
+
+{% call layouts.center() %}
+# {{ frontmatter.doc.title }}
+---
+Markdown Styling eXtra is an extended markdown based typesetting system.
+
+Currently a work in progress (**WIP**)
+{% endcall %}
+
+## About
+{{ utils.include_rel("chapters/about.mdxt") }}
+## The Document
+{{ utils.include_rel("chapters/document.mdxt") }}
+## Document Configuration
+{{ utils.include_rel("chapters/configuration.mdxt") }}
+
+{% endblock %}

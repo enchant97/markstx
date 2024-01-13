@@ -1,0 +1,12 @@
+In the root file of every document you can set certain parameters to control certain features, for example setting the title or controlling the page size.
+
+In MarkstX this is set by providing YAML frontmatter at the top of the root file. An example is shown below:
+
+```
+---
+doc:
+    title: "My Document"
+---
+
+The document contents here...
+```

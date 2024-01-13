@@ -1,0 +1,6 @@
+MarkstX is similar to LaTeX, meaning you define the document structure and layout via plain-text and then it is compiled into the final document.
+
+Unlike LaTeX, MarkstX uses the power of markdown to allow an easier syntax for simple markup of text. But brings more functionality with the additional syntax and templating system.
+
+### Migrating From Markdown
+If you have a lot of documents already written in markdown, it is easy to convert them into a MarkstX document. It is mostly just copy-n-paste. Take a look on how to create a document to learn more.

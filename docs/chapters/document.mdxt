@@ -1,0 +1,22 @@
+Every document will have a few similar requirements.
+
+1. Configuration via frontmatter
+2. Inherit from a document class
+3. Defining the content block
+4. Any requirements of the document class
+
+In this chapter the frontmatter will not be covered, as it is not required for a document to be created.
+
+In every document a class must be provided, this brings in the styling for how the document will be created. In this chapter the "basic" class will be used.
+
+The file should look like this:
+
+```
+{% raw %}
+{% extends "_classes/basic" %}
+{% block content %}
+# My Document
+This is my first document!
+{% endblock %}
+{% endraw %}
+```
