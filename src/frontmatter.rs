@@ -59,20 +59,25 @@ pub struct PageConfig {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct FrontMatter {
+pub struct DocConfig {
     #[serde(default)]
     pub title: String,
-    #[serde(default)]
-    pub page: PageConfig,
 }
 
-impl Default for FrontMatter {
+impl Default for DocConfig {
     fn default() -> Self {
         Self {
             title: String::from("Untitled Document"),
-            page: Default::default(),
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Default, Debug)]
+pub struct FrontMatter {
+    #[serde(default)]
+    pub doc: DocConfig,
+    #[serde(default)]
+    pub page: PageConfig,
 }
 
 impl FrontMatter {
