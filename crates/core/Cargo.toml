@@ -1,0 +1,10 @@
+[package]
+name = "markstx-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pulldown-cmark = "0.9.3"
+minijinja = { version = "1.0.10", features = ["loader"] }
+serde = { version = "1.0.195", features = ["derive"] }
+serde_yaml = "0.9.30"

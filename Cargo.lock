@@ -243,9 +243,18 @@ dependencies = [
  "clap",
  "csv",
  "lipsum",
+ "markstx-core",
+ "minijinja",
+ "rust-embed",
+ "serde",
+]
+
+[[package]]
+name = "markstx-core"
+version = "0.1.0"
+dependencies = [
  "minijinja",
  "pulldown-cmark",
- "rust-embed",
  "serde",
  "serde_yaml",
 ]

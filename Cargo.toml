@@ -3,12 +3,16 @@ name = "markstx"
 version = "0.1.0"
 edition = "2021"
 
+[workspace]
+members = [
+    "crates/*",
+]
+
 [dependencies]
+markstx-core = { path = "./crates/core" }
 serde = { version = "1.0.195", features = ["derive"] }
-serde_yaml = "0.9.30"
-pulldown-cmark = "0.9.3"
 clap = { version = "4.4.13", features = ["derive"] }
 rust-embed = "8.2.0"
-minijinja = { version = "1.0.10", features = ["loader"] }
+minijinja = { version = "1.0.10" }
 lipsum = "0.9.0"
 csv = "1.3.0"

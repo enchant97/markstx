@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum PageOrientation {
     #[serde(rename = "portrait")]
     Portrait,
@@ -8,7 +8,7 @@ pub enum PageOrientation {
     Landscape,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(untagged)]
 pub enum PageSize {
     Absolute {
@@ -30,7 +30,7 @@ impl Default for PageSize {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PageMargin {
     pub top: String,
     pub right: String,
@@ -50,7 +50,7 @@ impl Default for PageMargin {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct PageConfig {
     #[serde(default)]
     pub size: PageSize,
@@ -58,7 +58,7 @@ pub struct PageConfig {
     pub margin: PageMargin,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DocConfig {
     #[serde(default)]
     pub title: String,
@@ -72,7 +72,7 @@ impl Default for DocConfig {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct FrontMatter {
     #[serde(default)]
     pub doc: DocConfig,
@@ -92,7 +92,7 @@ pub fn split_by_frontmatter(content: &str) -> (Option<String>, String) {
     let mut frontmatter = None;
 
     if lines.len() > 2 && lines[0] == "---" {
-        for (i, line) in lines[1..].into_iter().enumerate() {
+        for (i, line) in lines[1..].iter().enumerate() {
             if *line == "---" {
                 frontmatter = Some(lines[1..i + 1].join("\n"));
                 final_content = lines[i + 2..].join("\n");

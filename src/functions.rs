@@ -1,3 +1,5 @@
+use crate::utils::DEFAULT_DOC_EXT;
+use markstx_core::processor::Processor;
 use minijinja::{functions::Function, value::Kwargs, Error, Value};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -5,8 +7,6 @@ use std::{
     process::{Command, Stdio},
     sync::{Arc, RwLock},
 };
-
-use crate::{processor::Processor, utils::DEFAULT_DOC_EXT};
 
 type FnResult<Rt> = Result<Rt, Error>;
 
@@ -18,7 +18,11 @@ pub fn make_include(
         if path.extension().is_none() {
             path.set_extension(DEFAULT_DOC_EXT);
         }
-        let content = processor.read().unwrap().render_content(path);
+        let content = processor
+            .read()
+            .unwrap()
+            .render_content(path)
+            .map_err(Into::<Error>::into)?;
         Ok(content)
     }
 }
@@ -84,7 +88,7 @@ where
 
 pub fn convert_csv(options: Kwargs) -> Result<Value, Error> {
     if let Some(path) = options.get::<Option<String>>("path")? {
-        let mut reader = csv::Reader::from_path(&path)
+        let mut reader = csv::Reader::from_path(path)
             .map_err(|e| Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()))?;
         let parsed = pass_csv(&mut reader)?;
         Ok(Value::from_serializable(&parsed))
