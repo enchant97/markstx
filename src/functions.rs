@@ -6,7 +6,7 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use crate::processor::Processor;
+use crate::{processor::Processor, utils::DEFAULT_DOC_EXT};
 
 type FnResult<Rt> = Result<Rt, Error>;
 
@@ -14,7 +14,10 @@ pub fn make_include(
     processor: Arc<RwLock<Processor>>,
 ) -> impl Function<FnResult<String>, (String, String)> {
     move |dir: String, filename: String| -> FnResult<String> {
-        let path = PathBuf::from(dir).join(filename);
+        let mut path = PathBuf::from(dir).join(filename);
+        if path.extension().is_none() {
+            path.set_extension(DEFAULT_DOC_EXT);
+        }
         let content = processor.read().unwrap().render_content(path);
         Ok(content)
     }
