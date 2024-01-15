@@ -1,5 +1,5 @@
 use crate::utils::DEFAULT_DOC_EXT;
-use markstx_core::processor::Processor;
+use markstx_core::processor::{Processor, ProcessorError};
 use minijinja::{functions::Function, value::Kwargs, Error, Value};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -20,7 +20,7 @@ pub fn make_include(
         }
         let content = processor
             .read()
-            .unwrap()
+            .expect("failed to gain lock on processor")
             .render_content(path)
             .map_err(Into::<Error>::into)?;
         Ok(content)
@@ -34,12 +34,12 @@ pub fn execute_command(command: String, options: Kwargs) -> Result<String, Error
                 .args(&args)
                 .stdout(Stdio::piped())
                 .spawn()
-                .unwrap()
+                .map_err(|_| ProcessorError::new_generic("failed to execute process"))?
                 .wait_with_output()
-                .unwrap()
+                .map_err(|_| ProcessorError::new_generic("failed to wait on process"))?
                 .stdout,
         )
-        .unwrap()
+        .map_err(|_| ProcessorError::new_generic("executed process gave back non utf8 characters"))?
         .to_owned()),
         None => Err(Error::new(
             minijinja::ErrorKind::MissingArgument,

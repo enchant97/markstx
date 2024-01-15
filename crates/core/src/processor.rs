@@ -1,3 +1,4 @@
+use core::fmt;
 use std::path::Path;
 
 use minijinja::{
@@ -10,33 +11,70 @@ use pulldown_cmark::Options;
 use crate::{context::Context, frontmatter::FrontMatter};
 
 #[derive(Debug)]
-pub enum ProcessorError {
+pub enum ProcessorErrorType {
     PathInvalid(String),
     Parser(minijinja::Error),
     IO(std::io::Error),
     InvalidFrontmatter,
+    Generic(String),
+}
+
+#[derive(Debug)]
+pub struct ProcessorError {
+    pub error: ProcessorErrorType,
+}
+
+impl ProcessorError {
+    pub fn new_generic(detail: &str) -> Self {
+        Self {
+            error: ProcessorErrorType::Generic(detail.to_owned()),
+        }
+    }
+}
+
+impl std::error::Error for ProcessorError {}
+
+impl fmt::Display for ProcessorError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.error {
+            ProcessorErrorType::PathInvalid(v) => write!(f, "path '{v}' invalid"),
+            ProcessorErrorType::Parser(e) => write!(f, "{e}"),
+            ProcessorErrorType::IO(e) => write!(f, "{e}"),
+            ProcessorErrorType::InvalidFrontmatter => write!(f, "frontmatter invalid"),
+            ProcessorErrorType::Generic(v) => write!(f, "{v}"),
+        }
+    }
+}
+
+impl From<ProcessorErrorType> for ProcessorError {
+    fn from(v: ProcessorErrorType) -> Self {
+        Self { error: v }
+    }
 }
 
 impl From<minijinja::Error> for ProcessorError {
     fn from(v: minijinja::Error) -> Self {
-        Self::Parser(v)
+        Self {
+            error: ProcessorErrorType::Parser(v),
+        }
     }
 }
 
 impl From<ProcessorError> for minijinja::Error {
     fn from(v: ProcessorError) -> Self {
-        match v {
-            ProcessorError::PathInvalid(msg) => {
+        match v.error {
+            ProcessorErrorType::PathInvalid(msg) => {
                 Self::new(minijinja::ErrorKind::InvalidOperation, msg)
             }
-            ProcessorError::Parser(e) => e,
-            ProcessorError::IO(e) => {
+            ProcessorErrorType::Parser(e) => e,
+            ProcessorErrorType::IO(e) => {
                 Self::new(minijinja::ErrorKind::InvalidOperation, e.to_string())
             }
-            ProcessorError::InvalidFrontmatter => Self::new(
+            ProcessorErrorType::InvalidFrontmatter => Self::new(
                 minijinja::ErrorKind::InvalidOperation,
                 "invalid document frontmatter".to_owned(),
             ),
+            ProcessorErrorType::Generic(v) => Self::new(minijinja::ErrorKind::InvalidOperation, v),
         }
     }
 }
@@ -73,8 +111,8 @@ impl Processor {
         let abs_path = filepath
             .as_ref()
             .canonicalize()
-            .map_err(|e| ProcessorError::PathInvalid(e.to_string()))?;
-        let current_dir = abs_path.parent().ok_or(ProcessorError::PathInvalid(
+            .map_err(|e| ProcessorErrorType::PathInvalid(e.to_string()))?;
+        let current_dir = abs_path.parent().ok_or(ProcessorErrorType::PathInvalid(
             "given path has no parent".to_string(),
         ))?;
 
@@ -101,7 +139,7 @@ impl Processor {
     }
     /// Same as `render_content_str`, but instead loads directly from given file-path.
     pub fn render_content<P: AsRef<Path>>(&self, path: P) -> Result<String, ProcessorError> {
-        let content = std::fs::read_to_string(&path).map_err(ProcessorError::IO)?;
+        let content = std::fs::read_to_string(&path).map_err(ProcessorErrorType::IO)?;
         self.render_content_str(path, &content)
     }
 }
