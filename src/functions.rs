@@ -64,16 +64,19 @@ pub struct ParsedCSV {
     pub records: Vec<Vec<String>>,
 }
 
-fn pass_csv<R>(reader: &mut csv::Reader<R>) -> Result<ParsedCSV, Error>
+fn pass_csv<R>(reader: &mut csv::Reader<R>, has_headers: bool) -> Result<ParsedCSV, Error>
 where
     R: std::io::Read,
 {
-    let headers = reader
-        .headers()
-        .map_err(|e| Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()))?
-        .into_iter()
-        .map(|v| v.to_owned())
-        .collect::<Vec<String>>();
+    let headers = match has_headers {
+        false => vec![],
+        true => reader
+            .headers()
+            .map_err(|e| Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()))?
+            .into_iter()
+            .map(|v| v.to_owned())
+            .collect::<Vec<String>>(),
+    };
     let mut records = Vec::new();
     for result in reader.records() {
         let columns = result
@@ -87,14 +90,23 @@ where
 }
 
 pub fn convert_csv(options: Kwargs) -> Result<Value, Error> {
+    let has_headers: bool = options
+        .get::<Option<bool>>("has_headers")
+        .map_err(|e| Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()))?
+        .unwrap_or_default();
+
+    let mut reader_builder = csv::ReaderBuilder::new();
+    let reader = reader_builder.trim(csv::Trim::All).has_headers(has_headers);
+
     if let Some(path) = options.get::<Option<String>>("path")? {
-        let mut reader = csv::Reader::from_path(path)
+        let mut reader = reader
+            .from_path(path)
             .map_err(|e| Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()))?;
-        let parsed = pass_csv(&mut reader)?;
+        let parsed = pass_csv(&mut reader, has_headers)?;
         Ok(Value::from_serializable(&parsed))
     } else if let Some(content) = options.get::<Option<String>>("content")? {
         let mut reader = csv::Reader::from_reader(content.as_bytes());
-        let parsed = pass_csv(&mut reader)?;
+        let parsed = pass_csv(&mut reader, has_headers)?;
         Ok(Value::from_serializable(&parsed))
     } else {
         Err(Error::new(

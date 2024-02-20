@@ -1,8 +1,8 @@
-{% macro csv_to_table(path="") %}
+{% macro csv_to_table(path="", has_headers=true) %}
 {% if path %}
-{% set csv = _convert_csv(path=path) %}
+{% set csv = _convert_csv(path=path, has_headers=has_headers) %}
 {% else %}
-{% set csv = _convert_csv(content=caller()) %}
+{% set csv = _convert_csv(content=caller(), has_headers=has_headers) %}
 {% endif %}
 <table>
     <thead>
